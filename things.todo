@@ -1,0 +1,22 @@
+========
+= HIGH =
+========
+
+- Export is requiring fastercsv, I thought that was optional?
+- Support virtual columns and associations that are not tied to RecordSelect ie. there values may be strings. (Actions::FieldSearch#do_show_search)
+
+==========
+= MEDIUM =
+==========
+
+- Make the initialize of customize.columns available programatically ie. workshop_invoice_controler.print_invoice_list
+
+- Fix Field Search
+  - Reset so that it clears RecordSelect when column.plural_association? ===> :workshops => [1,4]
+  ✓ Show current values of search when field_search is hidden then shown. Apply the :customize actions concept.
+
+- Pass in options into dev override routines so that we don't have to call active_scaffold_input_options...
+
+=======
+= LOW =
+======= 
