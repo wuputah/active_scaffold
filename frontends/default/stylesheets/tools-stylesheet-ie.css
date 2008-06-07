@@ -1,0 +1,14 @@
+.active-scaffold-header div.actions a.show_customize,
+.active-scaffold-header div.actions a.show_print_html,
+.active-scaffold-header div.actions a.show_print_pdf {
+background-image: none;
+filter: progid:DXImageTransform.Microsoft.AlphaImageLoader(src='../images/active_scaffold/default/printer_tool.png', sizingMethod='crop');
+}
+.active-scaffold-header div.actions a.show_customize {
+background-image: none;
+filter: progid:DXImageTransform.Microsoft.AlphaImageLoader(src='../images/active_scaffold/default/customize_tool.png', sizingMethod='crop');
+}
+.active-scaffold-header div.actions a.show_export_tool {
+background-image: none;
+filter: progid:DXImageTransform.Microsoft.AlphaImageLoader(src='../images/active_scaffold/default/export_tool.png', sizingMethod='crop');
+}

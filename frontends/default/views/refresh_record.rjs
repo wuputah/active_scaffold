@@ -1,0 +1,2 @@
+page.replace element_row_id(:action => 'list', :id => params[:id]), :partial => 'list_record', :locals => { :record => @record }
+page << "ActiveScaffold.stripe('#{active_scaffold_tbody_id}');" 

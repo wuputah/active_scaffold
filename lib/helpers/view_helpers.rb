@@ -79,11 +79,15 @@ module ActiveScaffold
       # easy way to include ActiveScaffold assets
       def active_scaffold_includes(frontend = :default)
         js = ActiveScaffold::Config::Core.javascripts(frontend).collect do |name|
+          ActiveRecord::Base.logger.debug "xxxxxxxx: name = #{name.pretty_inspect}"
           javascript_include_tag(ActiveScaffold::Config::Core.asset_path(name, frontend))
         end.join('')
-
         css = stylesheet_link_tag(ActiveScaffold::Config::Core.asset_path("stylesheet.css", frontend))
+        css << stylesheet_link_tag(ActiveScaffold::Config::Core.asset_path('tools-stylesheet.css', frontend))
+        css << stylesheet_link_tag(ActiveScaffold::Config::Core.asset_path('tools-left-handed-stylesheet.css', frontend)) if ActiveScaffold::Config::Core.left_handed
         ie_css = stylesheet_link_tag(ActiveScaffold::Config::Core.asset_path("stylesheet-ie.css", frontend))
+        ie_css << stylesheet_link_tag(ActiveScaffold::Config::Core.asset_path('tools-stylesheet-ie.css', frontend))
+        ie_css << stylesheet_link_tag(ActiveScaffold::Config::Core.asset_path('tools-left-handed-stylesheet-ie.css', frontend)) if ActiveScaffold::Config::Core.left_handed
 
         js + "\n" + css + "\n<!--[if IE]>" + ie_css + "<![endif]-->\n"
       end

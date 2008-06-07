@@ -1,0 +1,20 @@
+<%
+  url_options = params_for(:action => :export_tool)
+-%>
+
+<%= form_tag url_for(url_options)%>
+<h3><%=as_('Options')%></h3>
+<div class="options checkbox-list">
+  <div class="option checkbox-wrapper">
+    <%= content_tag(:label, check_box_tag('skip_header', 1, active_scaffold_config.export_tool.skip_header) + " #{as_('Omit Header')}") %>
+  </div>
+  <div class="option checkbox-wrapper">
+    <%= content_tag(:label, text_field_tag('delimiter', active_scaffold_config.export_tool.delimiter, :size => 1, :maxlength => 1) + " #{as_('Delimiter')}") %>
+  </div>
+  &nbsp;
+</div>
+<div class="separator"></div>
+  <%= submit_tag active_scaffold_config.export_tool.link.label, :class => "submit" %>
+  <%= link_to as_('Cancel'), params_for(:action => 'list'), :class => 'cancel' %>
+  <%= loading_indicator_tag(:action => :export_tool) %>
+</form>

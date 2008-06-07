@@ -1,0 +1,11 @@
+.active-scaffold tr.record td.actions {
+width: auto;
+}
+.active-scaffold li.form-element dd {
+float: none;
+margin-left: none;
+}
+
+.active-scaffold li.form-element dt {
+padding-right: 10px;
+}

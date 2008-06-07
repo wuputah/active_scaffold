@@ -84,6 +84,27 @@ module ActiveScaffold
         end
       end
 
+      def active_scaffold_column_percentage(column, record)
+        number_to_percentage(record[column.name].to_s, :precision => 1)
+      end
+
+      def active_scaffold_column_ssn(column, record)
+        usa_number_to_ssn(record[column.name].to_s)
+      end
+
+      def active_scaffold_column_usa_money(column, record)
+        number_to_currency(record[column.name].to_s)
+      end
+
+      def active_scaffold_column_usa_phone(column, record)
+        usa_number_to_phone(record[column.name].to_s)
+      end
+
+      def active_scaffold_column_usa_zip(column, record)
+        usa_number_to_zip(record[column.name].to_s)
+      end
+
+
       def column_override(column)
         "#{column.name.to_s.gsub('?', '')}_column" # parse out any question marks (see issue 227)
       end
@@ -166,22 +187,95 @@ module ActiveScaffold
         javascript_tag(function)
       end
       
-      def active_scaffold_inplace_edit(record, column)
-        formatted_column = format_inplace_edit_column(record,column)
+      # def active_scaffold_inplace_edit(record, column)
+      #   formatted_column = format_inplace_edit_column(record,column)
+      #   id_options = {:id => record.id.to_s, :action => 'update_column', :name => column.name.to_s}
+      #   tag_options = {:tag => "span", :id => element_cell_id(id_options), :class => "in_place_editor_field"}
+      #   in_place_editor_options = {:url => {:controller => params_for[:controller], :action => "update_column", :column => column.name, :id => record.id.to_s},
+      #    :click_to_edit_text => as_("Click to edit"),
+      #    :cancel_text => as_("Cancel"),
+      #    :loading_text => as_("Loading…"),
+      #    :save_text => as_("Update"),
+      #    :saving_text => as_("Saving…"),
+      #    :html_response => false,
+      #    :options => "{method: 'post'}",
+      #    :script => true}.merge(column.options)
+      #   content_tag(:span, formatted_column, tag_options) + active_scaffold_in_place_editor_js(tag_options[:id], in_place_editor_options)
+      # end
+
+      # Allow in_place_editor to pass along nested information so the update_column can call refresh_record properly.
+      def active_scaffold_inplace_edit(record, column, options = {})
+        formatted_column = options[:formatted_column] || format_inplace_edit_column(record, column)
         id_options = {:id => record.id.to_s, :action => 'update_column', :name => column.name.to_s}
         tag_options = {:tag => "span", :id => element_cell_id(id_options), :class => "in_place_editor_field"}
-        in_place_editor_options = {:url => {:controller => params_for[:controller], :action => "update_column", :column => column.name, :id => record.id.to_s},
+        in_place_editor_options = {:url => {:controller => params_for[:controller], :action => "update_column", :eid => params[:eid], :parent_model => params[:parent_model], :column => column.name, :id => record.id.to_s},
          :click_to_edit_text => as_("Click to edit"),
          :cancel_text => as_("Cancel"),
          :loading_text => as_("Loading…"),
          :save_text => as_("Update"),
          :saving_text => as_("Saving…"),
-         :html_response => false,
-         :options => "{method: 'post'}",
          :script => true}.merge(column.options)
-        content_tag(:span, formatted_column, tag_options) + active_scaffold_in_place_editor_js(tag_options[:id], in_place_editor_options)
+        html =  html_for_inplace_display(formatted_column, tag_options[:id], in_place_editor_options)
+        html << form_for_inplace_display(record, column, tag_options[:id], in_place_editor_options, options)
       end
 
+      def check_for_choices(options)
+        raise ArgumentError, "Missing choices for select! Specify options[:choices] for in_place_select" if options[:choices].nil?
+      end
+      
+      def html_for_inplace_display(display_text, id_string, in_place_editor_options)
+        content_tag(:span, display_text,
+          :onclick => "Element.hide(this);$('#{id_string}_form').show();", 
+          :onmouseover => visual_effect(:highlight, id_string), 
+          :title => in_place_editor_options[:click_to_edit_text], 
+          :id => id_string,
+          :class => "inplace_span")
+      end
+
+      def form_for_inplace_display(record, column, id_string, in_place_editor_options, options)
+        retval = ""
+        in_place_editor_options[:url] ||= {}
+        in_place_editor_options[:url][:action] ||= "set_record_#{column.name}"
+        in_place_editor_options[:url][:id] ||= record.id
+        loader_message = in_place_editor_options[:saving_text] || as_("Saving...")
+        retval << form_remote_tag(:url => in_place_editor_options[:url],
+  				:method => in_place_editor_options[:http_method] || :post,
+          :loading => "$('#{id_string}_form').hide(); $('loader_#{id_string}').show();",
+          :complete => "$('loader_#{id_string}').hide();",
+          :html => {:class => "in_place_editor_form", :id => "#{id_string}_form", :style => "display:none" } )
+
+        retval << field_for_inplace_editing(record, options, column )
+        retval << content_tag(:br) if in_place_editor_options[:br]
+        retval << submit_tag(as_("OK"), :class => "inplace_submit")
+        retval << link_to_function( "Cancel", "$('#{id_string}_form').hide();$('#{id_string}').show() ", {:class => "inplace_cancel" })
+        retval << "</form>"
+        # #FIXME 2008-01-14 (EJM) Level=0 - Use AS's spinner
+        # retval << invisible_loader( loader_message, "loader_#{id_string}", "inplace_loader")
+        retval << content_tag(:br)
+      end
+
+      def field_for_inplace_editing(record, options, column)
+        input_type = column.list_ui
+        options[:class] = "inplace_#{input_type}"
+        htm_opts = {:class => options[:class] }
+        case input_type
+        when :textarea
+          text_area(:record, column.name, options )
+        when :select
+          select(:record, column.name,  options[:choices], {:selected => record.send(column.name)}.merge(options), htm_opts )
+        when :checkbox
+          options[:label_class] = "inplace_#{input_type}_label"
+          checkbox_collection(:record, column.name, record,  options[:choices], options )
+        when :radio
+          options[:label_class] = "inplace_#{input_type}_label"
+          radio_collection(:record, column.name, record,  options[:choices], options )
+        # when :date_select
+        #   calendar_date_select( :record, column.name, options)
+        else
+          text_field(:record, column.name, options )
+        end
+      end
+      
     end
   end
 end
