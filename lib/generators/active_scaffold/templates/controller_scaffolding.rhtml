@@ -1,0 +1,5 @@
+  active_scaffold :<%=@singular_name.pluralize%> do |config|
+	  has_columns [
+<%= all_columns(@model_instance, @singular_name, { :has_columns => true, :exclude => %w(id created_on created_at updated_on updated_at lock_version) }).chop %>
+	  ]
+	end  

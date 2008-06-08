@@ -1,0 +1,65 @@
+.active-scaffold-header div.actions {
+	position: relative;
+	text-align: left;
+  margin-bottom: 5px; 
+  padding-top: 5px;
+  padding-right: 0px;
+  padding-bottom: 10px;
+  padding-left: 10px;
+}
+
+.active-scaffold-header div.actions a {
+float: left;
+margin-top: 2px; 
+margin-left: 12px; 
+padding-top: 5px;
+padding-right: 0px;
+padding-bottom: 5px;
+padding-left: 0px;
+}
+
+.active-scaffold tr.record td {
+border-right: solid 1px #C5DBF7;
+border-left: none;
+}
+
+.active-scaffold tr.record td.actions {
+border-left: solid 1px #C5DBF7;
+border-right: solid 1px #C5DBF7;
+width: 0%;
+}
+
+.active-scaffold tr.record td.actions table {
+float: left;
+}
+
+.active-scaffold tr.record td.actions table td {
+text-align: left;
+}
+
+.active-scaffold li.form-element dt {
+text-align: right;
+}
+
+.active-scaffold li.form-element dd {
+margin-left: 1em;
+}
+
+.active-scaffold .show-view dt {
+width: 16em;
+text-align: right;
+}
+
+.active-scaffold .show-view dd {
+float: inherit;
+margin-left: 13em;
+}
+
+.active-scaffold a.inline-adapter-close {
+float: left;
+}
+
+.left-handed-actions {
+margin: 0px; 
+float: left
+}

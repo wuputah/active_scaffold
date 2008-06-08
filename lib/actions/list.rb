@@ -1,5 +1,6 @@
 module ActiveScaffold::Actions
   module List
+    include ActiveScaffold::Search
     def self.included(base)
       base.before_filter :list_authorized?, :only => [:index, :table, :update_table, :row, :list]
     end
@@ -30,6 +31,7 @@ module ActiveScaffold::Actions
     end
 
     def list
+      reset_search_session_info
       do_list
 
       respond_to do |type|

@@ -15,27 +15,30 @@ href = url_for(params_for(:action => :update_table, :escape => false).delete_if{
 
   <ol class="form">
     <% active_scaffold_config.field_search.columns.each do |column| -%>
-      <% name = "search[#{column.name}]" %>
-      <% value = nil %>
-      <% value = search_params[column.name] if search_params %>
       <li class="form-element">
         <dl>
           <dt>
             <label for="<%= "search_#{column.name}" %>"><%= column.label %></label>
           </dt>
         <dd>
-        <%= case column.column.type
-          when :boolean
-            options = [
-              ['', ''],
-              [as_('True'), 1],
-              [as_('False'), 0]
-            ]
-            select_tag name, options_for_select(options, value)
-          else
-            text_field_tag(name, value, { :autocomplete => "off", :size => 20, :class => 'text-input', :id => "search_#{column.name}"})
-          end
+          <% if column.options[:field_search] == :range
+                #FIXME 2007-11-10 (EJM) Level=0 - For now :help_string => "", to make turn off TextFieldWithExample which is not happy with these range fields on the search form. The hidden field being the same name as the input is messing things up.
+                options = {:name => "search[#{column.name}][range_from]", :id => "search_#{column.name}_range_from", :help_string => "", :class => "range-input"}
+                options[:value] = nil
+                options[:value] = search_params[column.name][:range_from] if search_params and search_params[column.name]
+                html = active_scaffold_input_for_search(column, options)
+                html << content_tag("span", as_(" to "), {:class => "description"})
+                options[:value] = nil
+                options[:value] = search_params[column.name][:range_to] if search_params and search_params[column.name]
+                options[:name] = "search[#{column.name}][range_to]"
+                options[:id] = "search_#{column.name}_range_to"
+                html << active_scaffold_input_for_search(column, options)
+              else
+                #FIXME 2007-11-10 (EJM) Level=0 - For now :help_string => "", to make turn off TextFieldWithExample which is not happy with these range fields on the search form. The hidden field being the same name as the input is messing things up.
+                html = active_scaffold_input_for_search(column, {:blank_if_nil => true, :help_string => ""})
+              end
         %>
+        <%= html -%>
         </dd>
       </dl>
     </li>
@@ -43,7 +46,12 @@ href = url_for(params_for(:action => :update_table, :escape => false).delete_if{
   </ol>
   <p class="form-footer">
     <%= submit_tag as_('Search'), :class => "submit" %>
-    <a href="javascript:void(0)" class="cancel" onclick="f = this.up('form'); f.reset(); f.onsubmit();"><%= as_('Reset') -%></a>
+    <!-- <a href="javascript:void(0)" class="cancel" onclick="f = this.up('form'); f.reset(); f.onsubmit();"><%= as_('Reset') -%></a> -->
+    <% href = url_for(params_for(:action => :reset_search, :escape => false)) %>
+    <%= link_to_remote as_('Reset'), {:url => href,
+                              :method => :get,
+                              :failure => "ActiveScaffold.report_500_response('#{active_scaffold_id}')",
+                              :update => active_scaffold_content_id}, {:class => "cancel"} %>
     <%= loading_indicator_tag(:action => :search) %>
   </p>
 </form>

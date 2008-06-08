@@ -1,4 +1,7 @@
 <% scope ||= nil %>
+<% if column.form_ui == :hidden %>
+  <%= active_scaffold_input_for column, scope %>
+<% else %>
 <dl>
   <dt>
     <label for="<%= "record_#{column.name}" %>"><%= column.label %></label>
@@ -10,3 +13,4 @@
     <% end -%>
   </dd>
 </dl>
+<% end %>

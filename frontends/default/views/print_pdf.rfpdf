@@ -1,0 +1,56 @@
+<%
+  # ENGLISH
+
+  @l = {}
+
+  # PAGE META DESCRIPTORS --------------------------------------
+
+  @l['a_meta_charset'] = "UTF-8";
+  @l['a_meta_dir'] = "ltr";
+  @l['a_meta_language'] = "en";
+
+  # TRANSLATIONS --------------------------------------
+  @l['w_page'] = "page";
+
+
+  # create new PDF document (document units are set by default to millimeters)
+  pdf = TCPDF.new(active_scaffold_config.print_pdf.orientation)
+
+  # set document information
+  pdf.set_creator("TCPDF");
+  pdf.set_author("TCPDF");
+  pdf.set_title("");
+  pdf.set_subject("");
+  pdf.set_keywords("");
+
+  pdf.set_header_data(active_scaffold_config.print_pdf.header_image, active_scaffold_config.print_pdf.header_size, as_(active_scaffold_config.print_pdf.header_text), "")
+
+  #set margins
+  pdf.set_margins(15, 20, 15);
+  #set auto page breaks
+  pdf.set_auto_page_break(true, 25);
+  pdf.set_print_header
+  pdf.set_print_footer
+  pdf.set_header_margin(5);
+  pdf.set_footer_margin(10);
+  pdf.set_image_scale(4); #set image scale factor
+
+  pdf.set_header_font(["FreeSans", '', active_scaffold_config.print_pdf.header_font_size]);
+  pdf.set_footer_font(["FreeSans", '', active_scaffold_config.print_pdf.footer_font_size]);
+
+  pdf.set_language_array(@l); #set language items
+
+
+  #initialize document
+  pdf.alias_nb_pages();
+
+  pdf.add_page();
+
+  # set barcode
+  # pdf.SetBarcode(Time.now.strftime("Y-m-d H:i:s"));
+
+  # output some HTML code
+  pdf.set_font("vera", "", active_scaffold_config.print_pdf.font_size);
+  
+  pdf.write_html(@html, true, 0);
+%><%=pdf.Output()%>

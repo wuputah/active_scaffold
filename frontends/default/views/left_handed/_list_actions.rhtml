@@ -1,0 +1,17 @@
+<table cellpadding="0" cellspacing="0">
+  <tr>
+    <td class="indicator-container">
+      <%= loading_indicator_tag(:action => :record, :id => record.id) %>
+    </td>
+	<td>
+    <% active_scaffold_config.action_links.each :record do |link| -%>
+      <% next if controller.respond_to? link.security_method and ((controller.method(link.security_method).arity == 0 and !controller.send(link.security_method)) or (controller.method(link.security_method).arity == 1 and !controller.send(link.security_method, link))) -%>
+      
+			<div class="left-handed-actions">
+			  <%= record.authorized_for?(:action => link.crud_type) ? render_action_link(link, url_options) : "<a class='disabled'>#{link.label}</a>" -%>
+	    </div>
+      
+    <% end -%>
+	</td>
+  </tr>
+</table>

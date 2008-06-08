@@ -22,6 +22,20 @@ module ActiveScaffold::Config
     cattr_accessor :theme
     @@theme = :default
 
+    cattr_accessor :left_handed
+    @@left_handed = false
+
+    # Secure download
+    #  - requires encrypted_strings plugin
+    cattr_accessor :secure_download_controller
+    @@secure_download_controller = "/downloads"
+
+    cattr_accessor :secure_download_key
+    @@secure_download_key = nil
+
+    cattr_accessor :upper_case_form_fields
+    @@upper_case_form_fields = false
+
     # lets you disable the DHTML history
     def self.dhtml_history=(val)
       @@dhtml_history = val
@@ -156,6 +170,46 @@ module ActiveScaffold::Config
     # some utility methods
     # --------------------
 
+    ActionController::Resources::Resource::ACTIVE_SCAFFOLD_ROUTING[:collection][:print_list] = :get
+
+    def columns_by_key_value(*args)
+      val = args.collect {|a| a.collect {|value| value.is_a?(Array) ? value.first.keys.to_s.to_sym : value.to_sym}}
+      val.flatten!
+      locking_column_in_args = val.include?(@columns.active_record_class.locking_column.to_sym) 
+      model_has_locking_column = @columns.active_record_class.columns_hash.include?(@columns.active_record_class.locking_column)
+      # Optimistic locking doesn't work without it being included
+      val << @columns.active_record_class.locking_column unless locking_column_in_args or !model_has_locking_column
+      self.columns = val
+      [:field_search, :list, :live_search, :search, :show].each {|action| eval("#{action}.columns.exclude @columns.active_record_class.locking_column") if @actions.include?(action.to_sym)} unless locking_column_in_args
+      args.flatten!
+      args.each do |arg|
+        if arg.is_a?(Hash)
+          arg.each do |column_name, values|
+            if values.is_a?(Hash)
+              values.each do |attr, value|
+                attr = :form_ui if attr == :type
+                case attr
+                when :exclude, :except
+                  if value.is_a?(Array)
+                    value.each do |v| 
+                      eval("#{v}.columns.exclude column_name") if @actions.include?(v.to_sym)
+                    end
+                  else
+                    eval "#{value}.columns.exclude column_name" if @actions.include?(v.to_sym)
+                  end
+                when :reverse
+                  @columns[column_name].association.send "#{attr}=", value 
+                else
+                  @columns[column_name].send "#{attr}=", value
+                end
+              end
+            end
+          end
+        end
+      end
+    end
+    alias_method :has_columns, :columns_by_key_value
+
     def model_id
       @model_id
     end
@@ -191,6 +245,7 @@ module ActiveScaffold::Config
       search_path = self.inherited_view_paths.clone
       search_path << 'active_scaffold_overrides'
       search_path << "#{frontends_path}/#{frontend}/views" if frontend.to_sym != :default
+      search_path << "#{frontends_path}/default/views/left_handed" if self.left_handed
       search_path << "#{frontends_path}/default/views"
       return search_path
     end

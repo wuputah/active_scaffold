@@ -1,0 +1,36 @@
+<% display_class = ( @records.kind_of?(Array) ? @records.first : @records ) -%>
+<tr id="<%= active_scaffold_calculations_id %>" class="active-scaffold-calculations">
+<% if active_scaffold_config.action_links.any? {|link| link.type == :record } -%>
+  <td class="actions">&nbsp;</td>
+<% end -%>
+  <% active_scaffold_tools_list_columns.each do |column| -%>
+    <td>
+      <% if column.calculation? -%>
+        <%
+        override_calculate = "#{column.name}_calculate_column"
+        if respond_to? override_calculate
+          calculation = self.method(override_calculate).call() 
+        else
+          calculation = column_calculation(column)
+        end
+        override_formatter = "render_#{column.name}_#{column.calculate}"
+        calculation = if respond_to? override_formatter
+                        self.method(override_formatter).call(calculation) 
+                      else
+                        case column.list_ui 
+                          when :usa_money
+                            number_to_currency(calculation.to_s)
+                          when :percentage
+                            number_to_percentage(calculation.to_s, :precision => 1)          
+                          else
+                            number_with_delimiter(calculation.to_s)
+                        end
+                      end
+        _erbout.concat calculation.to_s
+        -%>
+      <% else -%>
+        &nbsp;
+      <% end -%>
+    </td>
+  <% end -%>
+</tr>

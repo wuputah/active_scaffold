@@ -1,0 +1,49 @@
+<%
+  file_name = File.join(RAILS_ROOT, "db", "schema.rb")
+  if File.exist?(file_name)
+    content = File.read(file_name)
+    foreign_keys = content.split("add_foreign_key")
+    foreign_keys.each do |foreign_key|
+      elements = foreign_key.split(" ")
+      association = elements[0].gsub(/[,"\[\]]/, '')
+      association_column = elements[1].gsub(/[,"\"\[\]]/, '')
+      association_reverse = elements[2].gsub(/[,"\"\[\]]/, '')
+      association_reverse_column = elements[3].gsub(/[,"\"\[\]]/, '')
+      # add_foreign_key "assets", ["site_id"], "sites", ["id"], :name => "assets_ibfk_1"
+      if association == @model_instance.class.table_name
+        %>  belongs_to :<%= association_reverse.singularize %>
+<%
+      end
+      if association_reverse == @model_instance.class.table_name 
+        %>  has_many :<%= association %>
+<%
+      end
+    end
+  end
+  if !(@model_instance.class.content_columns & [:name, :label, :title]).length -%>  def to_label
+    # Put the Model's label coloumn(s) here for example: first_name + " " + last_name
+  end<% end -%>
+
+  # ===================
+  # = Authorize BEGIN =
+  # ===================
+
+  def authorized_for_create?
+    current_user and current_user.permit?([:global, :super])
+  end
+
+  def authorized_for_destroy?
+    current_user and current_user.permit?([:global, :super])
+  end
+
+  def authorized_for_read?
+    current_user and current_user.permit?([:global, :super])
+  end
+  
+  def authorized_for_update?
+    current_user and current_user.permit?([:global, :super])
+  end
+  
+  # =================
+  # = Authorize END =
+  # =================

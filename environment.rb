@@ -34,6 +34,7 @@ require 'constraints'
 require 'attribute_params'
 require 'active_record_permissions'
 require 'responds_to_parent'
+require 'search'
 
 ##
 ## Autoloading for some directories
@@ -71,6 +72,8 @@ require 'helpers/controller_helpers'
 ## Load the bridge infrastructure
 ## 
 require 'bridges/bridge.rb'
+require 'bridges/checkbox'
+require 'bridges/dhtml_calendar'
 
 
 ##

@@ -263,7 +263,13 @@ ActiveScaffold.ActionLink.Abstract.prototype = {
   register_cancel_hooks: function() {
     // anything in the insert with a class of cancel gets the closer method, and a reference to this object for good measure
     var self = this;
-    this.adapter.select('.cancel').each(function(elem) { 
+    // This keeps FF 2.x happy
+    this.adapter.getElementsByClassName('cancel').each(function(elem) {    
+      elem.observe('click', this.close_handler.bind(this));
+      elem.link = self;
+    }.bind(this))
+    // This keeps FF 3.x happy
+    this.adapter.select('.cancel').each(function(elem) {
       elem.observe('click', this.close_handler.bind(this));
       elem.link = self;
     }.bind(this))
