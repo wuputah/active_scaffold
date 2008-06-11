@@ -74,15 +74,24 @@ module ActionView #:nodoc:
 
     private
 
+    # FIXME hack, this has been removed in edge rails
+    def active_scaffold_partial_pieces(partial_path) 
+      if partial_path.include?('/') 
+        return File.dirname(partial_path), File.basename(partial_path) 
+      else 
+        return controller.class.controller_path, partial_path 
+      end 
+    end
+            
     def rewrite_partial_path_for_active_scaffold(partial_path)
-      path, partial_name = partial_pieces(partial_path)
+      path, partial_name = active_scaffold_partial_pieces(partial_path)
 
       # test for the actual file
-      return partial_path if file_exists? File.join(path, "_#{partial_name}")
+      return partial_path if File.exists? File.join(path, "_#{partial_name}")
 
       # check the ActiveScaffold-specific directories
       active_scaffold_config.template_search_path.each do |template_path|
-        return File.join(template_path, partial_name) if file_exists? File.join(template_path, "_#{partial_name}")
+        return File.join(template_path, partial_name) if File.exists? File.join(template_path, "_#{partial_name}")
       end
       return partial_path
     end

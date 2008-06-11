@@ -2,12 +2,18 @@
 module ActionController #:nodoc:
   class Base
     def render_with_active_scaffold(*args, &block)
-      if self.class.uses_active_scaffold? and params[:adapter] and @rendering_adapter.nil?
+      # ACC I'm never seeing this params[:adapter] value being passed in, only args[0][:action]
+      if self.class.uses_active_scaffold? and ( params[:adapter] || args[0][:action] ) and @rendering_adapter.nil?
         @rendering_adapter = true # recursion control
         # if we need an adapter, then we render the actual stuff to a string and insert it into the adapter template
-        render :file => rewrite_template_path_for_active_scaffold(params[:adapter]),
+        path_val = params[:adapter] || args[0][:action]
+        # ACC I'm setting use_full_path to false here and rewrite_template_path_for_active_scaffold has been
+        # modified to return an absolute path
+        show_layout = args[0][:partial] ? false : true
+        render :file => rewrite_template_path_for_active_scaffold(path_val),
                :locals => {:payload => render_to_string(args.first, &block)},
-               :use_full_path => true
+               :use_full_path => false,
+               :layout => show_layout
         @rendering_adapter = nil # recursion control
       else
         render_without_active_scaffold(*args, &block)
@@ -33,12 +39,18 @@ module ActionController #:nodoc:
     private
 
     def rewrite_template_path_for_active_scaffold(path)
-      # test for the actual file
-      return path if template_exists? default_template_name(path)
+      base = File.join RAILS_ROOT, 'app', 'views'
       # check the ActiveScaffold-specific directories
       active_scaffold_config.template_search_path.each do |template_path|
-        full_path = File.join(template_path, path)
-        return full_path if template_exists? full_path
+        search_dir = File.join base, template_path
+        next unless File.exists?(search_dir)
+        # ACC I'm using this regex directory search because I don't know how to hook into the
+        # rails code that would do this for me. I am assuming here that path is a non-nested
+        # partial, so my regex is fragile, and will only work in that case. 
+        template_file = Dir.entries(search_dir).find {|f| f =~ /^#{path}/ }
+        # ACC pick_template and template_exists? are the same method (aliased), using both versions
+        # to express intent.
+        return File.join(search_dir, template_file) if template_exists?(template_file)
       end
       return path
     end

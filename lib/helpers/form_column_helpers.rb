@@ -182,9 +182,18 @@ module ActiveScaffold
       ## Form column override signatures
       ##
 
+      # FIXME hack, this has been removed in edge rails
+      def active_scaffold_partial_pieces(partial_path) 
+        if partial_path.include?('/') 
+          return File.dirname(partial_path), File.basename(partial_path) 
+        else 
+          return controller.class.controller_path, partial_path 
+        end 
+      end
+            
       def override_form_field_partial?(column)
-        path, partial_name = partial_pieces(override_form_field_partial(column))
-        file_exists? File.join(path, "_#{partial_name}")
+        path, partial_name = active_scaffold_partial_pieces(override_form_field_partial(column))
+        File.exists? File.join(path, "_#{partial_name}")
       end
 
       # the naming convention for overriding form fields with partials
