@@ -193,7 +193,8 @@ module ActiveScaffold
             
       def override_form_field_partial?(column)
         path, partial_name = active_scaffold_partial_pieces(override_form_field_partial(column))
-        File.exists? File.join(path, "_#{partial_name}")
+        @template.template_format = :html
+        @template.finder.file_exists? File.join(path, "_#{partial_name}")
       end
 
       # the naming convention for overriding form fields with partials

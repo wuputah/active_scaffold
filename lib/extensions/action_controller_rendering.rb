@@ -50,7 +50,7 @@ module ActionController #:nodoc:
         template_file = Dir.entries(search_dir).find {|f| f =~ /^#{path}/ }
         # ACC pick_template and template_exists? are the same method (aliased), using both versions
         # to express intent.
-        return File.join(search_dir, template_file) if template_exists?(template_file)
+        return File.join(search_dir, template_file) if !template_file.nil? && template_exists?(template_file)
       end
       return path
     end
