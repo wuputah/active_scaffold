@@ -48,24 +48,10 @@ class ActionView::TemplateFinder
 
 protected
 
-    # Returns the view path that contains the relative template 
-    def find_generic_base_path_for(template_file_name, extension)
-      # ACC TODO use more robust method of setting this path
-      path = RAILS_ROOT + '/vendor/plugins/active_scaffold/frontends/default/views'
-      # Should be able to use a rails method here to do this directory search
-      file = Dir.entries(path).find {|f| f =~ /^_?#{template_file_name}\.?#{extension}/ }
-      file ? File.join(path, file) : nil
-    end
-
-    def find_template_extension_from_handler_with_generics(template_path, template_format = @template.template_format)
-      t_ext = find_template_extension_from_handler_without_generics(template_path, template_format)
-      if t_ext && !t_ext.empty?
-        t_ext
-      else
-        'rhtml'
-      end
-    end
-    alias_method_chain :find_template_extension_from_handler, :generics
+  # We don't want to use generic_view_paths in ActionMailer, and we don't want
+  # to use them unless the controller action was explicitly defined.
+  def search_generic_view_paths?
+    controller.respond_to?(:generic_view_paths) and controller.class.action_methods.include?(controller.action_name)
   end
 
 private
